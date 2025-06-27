@@ -1,0 +1,55 @@
+{
+  "name": "superchain-drummer",
+  "version": "1.0.0",
+  "description": "Taiko-inspired rhythm game with real blockchain transactions across OP Sepolia, Base Sepolia, and Ink Sepolia",
+  "main": "index.js",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy:op": "hardhat run scripts/deploy-all.js --network op-sepolia",
+    "deploy:base": "hardhat run scripts/deploy-all.js --network base-sepolia",
+    "deploy:ink": "hardhat run scripts/deploy-all.js --network ink-sepolia",
+    "deploy:all": "npm run deploy:op && npm run deploy:base && npm run deploy:ink",
+    "node": "hardhat node",
+    "clean": "hardhat clean",
+    "security:audit": "node scripts/security-audit.js",
+    "security:check": "npm audit && npm run security:audit",
+    "security:fix": "npm audit fix",
+    "predeploy": "npm run security:check"
+  },
+  "keywords": [
+    "blockchain",
+    "game",
+    "rhythm",
+    "superchain",
+    "optimism",
+    "base",
+    "ink"
+  ],
+  "author": "Superchain Drummer Team",
+  
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^5.0.0",
+    "@openzeppelin/hardhat-upgrades": "^1.28.0",
+    "hardhat": "^2.19.0",
+    "hardhat-deploy": "^0.12.0",
+    "hardhat-deploy-ethers": "^0.3.0"
+  },
+  "dependencies": {
+    "ethers": "^6.8.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/superchain-drummer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/superchain-drummer/issues"
+  },
+  "homepage": "https://github.com/your-username/superchain-drummer#readme"
+} 

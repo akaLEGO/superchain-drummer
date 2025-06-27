@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superchain Drummer - Rhythm Game on Blockchain</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 20px;
+        }
+
+        .wallet-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .wallet-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .wallet-address {
+            background: rgba(0,0,0,0.3);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .connect-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-section {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .game-area {
+            background: rgba(0,0,0,0.8);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-canvas {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(to bottom, #1a1a1a, #000);
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .drum-lane {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #ff6b6b, #c44569);
+            border-radius: 50%;
+            border: 4px solid #fff;
+            box-shadow: 0 0 20px rgba(255,107,107,0.5);
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .drum-lane:active {
+            transform: translateX(-50%) scale(0.95);
+            box-shadow: 0 0 30px rgba(255,107,107,0.8);
+        }
+
+        .note {
+            position: absolute;
+            width: 60px;
+            height: 20px;
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            border-radius: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: noteFall 2s linear;
+        }
+
+        @keyframes noteFall {
+            from { top: -20px; }
+            to { top: 400px; }
+        }
+
+        .hit-effect {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(255,255,255,0.8), transparent);
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            animation: hitPulse 0.5s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes hitPulse {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+
+        .stats-panel {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .stat-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .score {
+            color: #00d2ff;
+        }
+
+        .combo {
+            color: #ff6b6b;
+        }
+
+        .accuracy {
+            color: #51cf66;
+        }
+
+        .gas-balance {
+            color: #ffd43b;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .control-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .deposit-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .deposit-input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.9);
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .deposit-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #51cf66, #40c057);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .deposit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .chain-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .chain-btn {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chain-btn.active {
+            border-color: #00d2ff;
+            background: rgba(0,210,255,0.2);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(45deg, #51cf66, #40c057);
+        }
+
+        .notification.error {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        }
+
+        .notification.info {
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+        }
+
+        @media (max-width: 768px) {
+            .game-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .wallet-info {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🥁 Superchain Drummer</h1>
+            <p class="subtitle">Rhythm Game on Blockchain - Hit the beats, create transactions!</p>
+        </div>
+
+        <div class="wallet-section">
+            <div class="wallet-info">
+                <div>
+                    <div class="stat-label">Wallet Address</div>
+                    <div class="wallet-address" id="walletAddress">Not connected</div>
+                </div>
+                <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+            </div>
+        </div>
+
+        <div class="game-section">
+            <div class="game-area">
+                <div class="game-canvas" id="gameCanvas">
+                    <div class="drum-lane" id="drumLane"></div>
+                </div>
+            </div>
+
+            <div class="stats-panel">
+                <h3 style="color: white; margin-bottom: 20px;">Game Stats</h3>
+                
+                <div class="stat-item">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value score" id="score">0</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-label">Combo</div>
+                    <div class="stat-value combo" id="combo">0</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-label">Accuracy</div>
+                    <div class="stat-value accuracy" id="accuracy">0%</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-label">Gas Balance</div>
+                    <div class="stat-value gas-balance" id="gasBalance">0 ETH</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-label">Total Hits</div>
+                    <div class="stat-value" id="totalHits">0</div>
+                </div>
+
+                <div class="controls">
+                    <button class="control-btn" id="startBtn">Start Game</button>
+                    <button class="control-btn" id="pauseBtn" disabled>Pause</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="deposit-section">
+            <h3 style="color: white; margin-bottom: 15px;">Gas Deposit</h3>
+            
+            <div class="chain-selector">
+                <button class="chain-btn active" data-chain="op-sepolia">OP Sepolia</button>
+                <button class="chain-btn" data-chain="base-sepolia">Base Sepolia</button>
+                <button class="chain-btn" data-chain="ink-sepolia">Ink Sepolia</button>
+            </div>
+            
+            <input type="number" class="deposit-input" id="depositAmount" placeholder="Amount in ETH (0.001 - 1)" step="0.001" min="0.001" max="1">
+            <button class="deposit-btn" id="depositBtn">Deposit Gas</button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script>
+        // Game state
+        let gameState = {
+            isConnected: false,
+            isPlaying: false,
+            score: 0,
+            combo: 0,
+            accuracy: 0,
+            totalHits: 0,
+            perfectHits: 0,
+            currentChain: 'op-sepolia',
+            contractAddress: null,
+            gasBalance: 0
+        };
+
+        // Contract addresses for each chain
+        const contractAddresses = {
+            'op-sepolia': '0x...', // Replace with deployed contract address
+            'base-sepolia': '0x...', // Replace with deployed contract address
+            'ink-sepolia': '0x...' // Replace with deployed contract address
+        };
+
+        // Chain configurations
+        const chainConfigs = {
+            'op-sepolia': {
+                chainId: '0xaa36a7',
+                chainName: 'OP Sepolia',
+                rpcUrl: 'https://sepolia.optimism.io',
+                blockExplorer: 'https://sepolia-optimism.etherscan.io'
+            },
+            'base-sepolia': {
+                chainId: '0x14a34',
+                chainName: 'Base Sepolia',
+                rpcUrl: 'https://sepolia.base.org',
+                blockExplorer: 'https://sepolia.basescan.org'
+            },
+            'ink-sepolia': {
+                chainId: '0xaa36a8',
+                chainName: 'Ink Sepolia',
+                rpcUrl: 'https://sepolia.ink.optimism.io',
+                blockExplorer: 'https://sepolia-ink.optimism.io'
+            }
+        };
+
+        // DOM elements
+        const connectBtn = document.getElementById('connectBtn');
+        const walletAddress = document.getElementById('walletAddress');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const depositBtn = document.getElementById('depositBtn');
+        const gameCanvas = document.getElementById('gameCanvas');
+        const drumLane = document.getElementById('drumLane');
+        const scoreEl = document.getElementById('score');
+        const comboEl = document.getElementById('combo');
+        const accuracyEl = document.getElementById('accuracy');
+        const gasBalanceEl = document.getElementById('gasBalance');
+        const totalHitsEl = document.getElementById('totalHits');
+        const depositAmount = document.getElementById('depositAmount');
+        const chainBtns = document.querySelectorAll('.chain-btn');
+        const notification = document.getElementById('notification');
+
+        // Initialize
+        let provider, signer, contract;
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    showNotification('Please install MetaMask!', 'error');
+                    return;
+                }
+
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                const address = await signer.getAddress();
+                
+                gameState.isConnected = true;
+                walletAddress.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
+                connectBtn.textContent = 'Connected';
+                connectBtn.disabled = true;
+
+                // Switch to current chain
+                await switchChain(gameState.currentChain);
+                
+                showNotification('Wallet connected successfully!', 'success');
+            } catch (error) {
+                showNotification('Failed to connect wallet: ' + error.message, 'error');
+            }
+        }
+
+        // Switch chain
+        async function switchChain(chainKey) {
+            try {
+                const config = chainConfigs[chainKey];
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: config.chainId }]
+                });
+                
+                gameState.currentChain = chainKey;
+                gameState.contractAddress = contractAddresses[chainKey];
+                
+                // Update UI
+                chainBtns.forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-chain="${chainKey}"]`).classList.add('active');
+                
+                // Initialize contract
+                if (gameState.contractAddress) {
+                    const contractABI = [
+                        "function depositGas(uint256 amount) external payable",
+                        "function withdrawGas(uint256 amount) external",
+                        "function getUserStats(address user) external view returns (uint256 balance, uint256 hits, uint256 score)",
+                        "function canHit(address user) external view returns (bool)"
+                    ];
+                    contract = new ethers.Contract(gameState.contractAddress, contractABI, signer);
+                    await updateGasBalance();
+                }
+                
+                showNotification(`Switched to ${config.chainName}`, 'info');
+            } catch (error) {
+                showNotification('Failed to switch chain: ' + error.message, 'error');
+            }
+        }
+
+        // Update gas balance
+        async function updateGasBalance() {
+            if (!contract) return;
+            
+            try {
+                const address = await signer.getAddress();
+                const [balance] = await contract.getUserStats(address);
+                gameState.gasBalance = ethers.utils.formatEther(balance);
+                gasBalanceEl.textContent = `${gameState.gasBalance} ETH`;
+            } catch (error) {
+                console.error('Failed to update gas balance:', error);
+            }
+        }
+
+        // Deposit gas
+        async function depositGas() {
+            if (!contract) {
+                showNotification('Please connect wallet and select a chain', 'error');
+                return;
+            }
+
+            const amount = parseFloat(depositAmount.value);
+            if (isNaN(amount) || amount < 0.001 || amount > 1) {
+                showNotification('Please enter a valid amount between 0.001 and 1 ETH', 'error');
+                return;
+            }
+
+            try {
+                depositBtn.disabled = true;
+                depositBtn.textContent = 'Depositing...';
+                
+                const tx = await contract.depositGas(ethers.utils.parseEther(amount.toString()), {
+                    value: ethers.utils.parseEther(amount.toString())
+                });
+                
+                await tx.wait();
+                await updateGasBalance();
+                
+                showNotification(`Successfully deposited ${amount} ETH!`, 'success');
+                depositAmount.value = '';
+            } catch (error) {
+                showNotification('Deposit failed: ' + error.message, 'error');
+            } finally {
+                depositBtn.disabled = false;
+                depositBtn.textContent = 'Deposit Gas';
+            }
+        }
+
+        // Game functions
+        function startGame() {
+            if (!gameState.isConnected) {
+                showNotification('Please connect your wallet first', 'error');
+                return;
+            }
+
+            gameState.isPlaying = true;
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            
+            // Start note spawning
+            spawnNotes();
+            
+            showNotification('Game started! Hit the drum to create transactions!', 'info');
+        }
+
+        function pauseGame() {
+            gameState.isPlaying = false;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            
+            showNotification('Game paused', 'info');
+        }
+
+        function spawnNotes() {
+            if (!gameState.isPlaying) return;
+            
+            const note = document.createElement('div');
+            note.className = 'note';
+            note.style.left = '50%';
+            note.style.transform = 'translateX(-50%)';
+            gameCanvas.appendChild(note);
+            
+            // Remove note after animation
+            setTimeout(() => {
+                if (note.parentNode) {
+                    note.parentNode.removeChild(note);
+                }
+            }, 2000);
+            
+            // Spawn next note
+            setTimeout(spawnNotes, Math.random() * 1000 + 500);
+        }
+
+        async function hitDrum() {
+            if (!gameState.isPlaying) return;
+            
+            // Create hit effect
+            const effect = document.createElement('div');
+            effect.className = 'hit-effect';
+            gameCanvas.appendChild(effect);
+            
+            setTimeout(() => {
+                if (effect.parentNode) {
+                    effect.parentNode.removeChild(effect);
+                }
+            }, 500);
+            
+            // Update game stats
+            gameState.totalHits++;
+            gameState.combo++;
+            gameState.score += gameState.combo * 100;
+            
+            // Calculate accuracy (simplified)
+            const accuracy = Math.min(100, Math.random() * 20 + 80);
+            gameState.accuracy = Math.round((gameState.accuracy * (gameState.totalHits - 1) + accuracy) / gameState.totalHits);
+            
+            if (accuracy > 95) {
+                gameState.perfectHits++;
+            }
+            
+            // Update UI
+            updateGameUI();
+            
+            // Record hit on blockchain (if contract is available)
+            if (contract) {
+                try {
+                    const canHit = await contract.canHit(await signer.getAddress());
+                    if (canHit) {
+                        // In a real implementation, this would be called by a relayer
+                        // For now, we'll just simulate it
+                        console.log('Drum hit recorded on blockchain!');
+                        await updateGasBalance();
+                    } else {
+                        showNotification('Insufficient gas balance! Please deposit more.', 'error');
+                        pauseGame();
+                    }
+                } catch (error) {
+                    console.error('Failed to record hit:', error);
+                }
+            }
+        }
+
+        function updateGameUI() {
+            scoreEl.textContent = gameState.score.toLocaleString();
+            comboEl.textContent = gameState.combo;
+            accuracyEl.textContent = `${gameState.accuracy}%`;
+            totalHitsEl.textContent = gameState.totalHits;
+        }
+
+        function showNotification(message, type) {
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Event listeners
+        connectBtn.addEventListener('click', connectWallet);
+        startBtn.addEventListener('click', startGame);
+        pauseBtn.addEventListener('click', pauseGame);
+        depositBtn.addEventListener('click', depositGas);
+        drumLane.addEventListener('click', hitDrum);
+        
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && gameState.isPlaying) {
+                e.preventDefault();
+                hitDrum();
+            }
+        });
+        
+        // Chain selection
+        chainBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                switchChain(btn.dataset.chain);
+            });
+        });
+
+        // Initialize
+        updateGameUI();
+    </script>
+</body>
+</html> 
