@@ -38,7 +38,7 @@
     "hardhat-deploy-ethers": "^0.3.0"
   },
   "dependencies": {
-    "ethers": "^6.8.0"
+    "ethers": "^5.7.2"
   },
   "engines": {
     "node": ">=16.0.0",
@@ -46,10 +46,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/superchain-drummer.git"
+    "url": "https://github.com/akaLego/superchain-drummer.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/superchain-drummer/issues"
+    "url": "https://github.com/akaLego/superchain-drummer/issues"
   },
-  "homepage": "https://github.com/your-username/superchain-drummer#readme"
+  "homepage": "https://github.com/akaLego/superchain-drummer#readme"
 } 
